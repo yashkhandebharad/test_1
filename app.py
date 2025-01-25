@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
 from sqlalchemy.orm import sessionmaker
 
 # Define database connection details
-DB_SERVER = 'SHREYASONKUSARE\SQLEXPRESS'   # Replace with your SQL Server name
+DB_SERVER = 'SHREYASONKUSARE\\SQLEXPRESS'   # Replace with your SQL Server name
 DB_DATABASE = 'test'   # Replace with your database name
 DB_USER = 'sa'   # Replace with your username
 DB_PASSWORD = 'admin123'   # Replace with your password
