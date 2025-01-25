@@ -2,17 +2,21 @@ import streamlit as st
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
 from sqlalchemy.orm import sessionmaker
 
-# Define database connection details
-DB_SERVER = 'SHREYASONKUSARE\\SQLEXPRESS'   # Replace with your SQL Server name
-DB_DATABASE = 'test'   # Replace with your database name
-DB_USER = 'sa'   # Replace with your username
-DB_PASSWORD = 'admin123'   # Replace with your password
+# Database connection details
+DB_SERVER = 'SHREYASONKUSARE\\SQLEXPRESS'
+DB_DATABASE = 'test'
+DB_USER = 'sa'
+DB_PASSWORD = 'admin123'
 
-# Create a database engine
-connection_string = f"mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}/{DB_DATABASE}?driver=ODBC+Driver+17+for+SQL+Server"
-engine = create_engine(connection_string)
+# Cached database engine
+@st.cache_resource
+def get_engine():
+    connection_string = f"mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}/{DB_DATABASE}?driver=ODBC+Driver+17+for+SQL+Server"
+    return create_engine(connection_string)
 
-# Create table metadata
+engine = get_engine()
+
+# Table metadata
 metadata = MetaData()
 users_table = Table(
     'users', metadata,
@@ -23,12 +27,14 @@ users_table = Table(
 )
 
 # Create table if not exists
-metadata.create_all(engine)
+if not engine.dialect.has_table(engine, "users"):
+    metadata.create_all(engine)
 
-# Function to insert data into the database
+# Insert user into database
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 def insert_user(name, age, salary):
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session = SessionLocal()
     try:
         insert_query = users_table.insert().values(name=name, age=age, salary=salary)
         session.execute(insert_query)
@@ -40,7 +46,7 @@ def insert_user(name, age, salary):
     finally:
         session.close()
 
-# Streamlit App
+# Streamlit app
 st.title("User Input Form")
 
 name = st.text_input("Enter your name")
